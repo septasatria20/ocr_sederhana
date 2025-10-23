@@ -1,10 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'home_screen.dart';
 
-class ResultScreen extends StatelessWidget {
+class ResultScreen extends StatefulWidget {
   final String ocrText;
 
   const ResultScreen({super.key, required this.ocrText});
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> {
+  late FlutterTts flutterTts;
+
+  @override
+  void initState() {
+    super.initState();
+    initTts();
+  }
+
+  void initTts() {
+    flutterTts = FlutterTts();
+    flutterTts.setLanguage("id-ID"); 
+  }
+
+  Future<void> _speakText() async {
+    await flutterTts.speak(widget.ocrText);
+  }
+
+  @override
+  void dispose() {
+    flutterTts.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +65,7 @@ class ResultScreen extends StatelessWidget {
                 ),
                 child: SingleChildScrollView(
                   child: Text(
-                    ocrText,
+                    widget.ocrText,
                     style: const TextStyle(fontSize: 16),
                   ),
                 ),
@@ -45,15 +74,27 @@ class ResultScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-            (route) => false,
-          );
-        },
-        child: const Icon(Icons.home),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: "speak",
+            onPressed: _speakText,
+            child: const Icon(Icons.volume_up),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: "home",
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomeScreen()),
+                (route) => false,
+              );
+            },
+            child: const Icon(Icons.home),
+          ),
+        ],
       ),
     );
   }
